@@ -3,16 +3,16 @@ title: API Reference
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
-  - ruby
+  - php
   - python
   - javascript
 
 toc_footers:
-  - <a href='#'>Sign Up for a Developer Key</a>
   - <a href='https://github.com/slatedocs/slate'>Documentation Powered by Slate</a>
 
 includes:
   - errors
+  - models
 
 search: true
 
@@ -22,83 +22,335 @@ meta:
   - name: description
     content: Documentation for the Kittn API
 ---
+# Flycoin Partner API Documentation
 
-# Introduction
+## Introduction
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+Welcome to the Flycoin Partner API! You can use our API to access Flycoin Partner API endpoints, which can get information on accounts, connect your external accounts to Flycoin accounts, and give FLY to connected accounts.
 
-We have language bindings in Shell, Ruby, Python, and JavaScript! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
+We have language bindings in Shell! You can view code examples in the dark area to the right.
 
-This example API documentation page was created with [Slate](https://github.com/slatedocs/slate). Feel free to edit it and use it as a base for your own API's documentation.
+## Getting Started
 
-# Authentication
+In order to get started, you'll need:
+
+* An API Key
+* API Docs
+
+### Creating Flycoin Accounts with your API Key
+
+The first step is to link an account on your site to an account on the Flycoin server by generating a claim link (see [Generating a Claim Link](./#generating-a-claim-link)). Once you've followed the generated link, you'll see this page if you aren't currently logged into a Flycoin account: ![Registration Page](./images/registration-example.png)
+
+If you are already logged into a Flycoin account, then you will be redirected to the dashboard page. You've now successfully linked a Flycoin account to your Partner account. 
+<aside class="notice"> There is no limit to the number of accounts a partner can link to Flycoin.</aside>
+
+### Retrieving Accounts
+
+Now that you've created an account, you can view how the account is represented in the Flycoin database (see [Account](./#account)). To view a specific account, see [Get Account Information](./#get-account-information). You can see all of the transactions associated with that account as well as their current balances.
+
+### Give Rewards to an Account
+
+Finally, you can give FLY from your Partner account on Flycoin to one of the linked accounts. Create a POST request and specify the currency, the amount, and a description of the transaction (see [Give Rewards](./#assign-rewards-to-an-account))
+
+## Authentication
 
 > To authorize, use this code:
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-```
-
 ```shell
-# With shell, you can just pass the correct header with each request
+# With shell, you can just pass the correct cookie with each request
 curl "api_endpoint_here" \
-  -H "Authorization: meowmeowmeow"
+  -b "fly-partner-api-key: YOUR-KEY-HERE"
 ```
 
-```javascript
-const kittn = require('kittn');
+> Make sure to replace `YOUR-KEY-HERE` with your API key.
 
-let api = kittn.authorize('meowmeowmeow');
-```
+The Flycoin Partner API uses API keys to allow access.
 
-> Make sure to replace `meowmeowmeow` with your API key.
+Flycoin expects for the API key to be included in all API requests to the server in a cookie that looks like the following:
 
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
-
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
+`fly-partner-api-key: YOUR-KEY-HERE`
 
 <aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
+You must replace <code>YOUR-KEY-HERE</code> with your personal API key.
 </aside>
 
-# Kittens
+## Partner API Requests
 
-## Get All Kittens
+### Get Account Information
 
-```ruby
-require 'kittn'
+```shell
+curl "https://app-flycoin.onrender.com/api/v1/partner/account/<partner_identifier_key>" \
+  -b "fly-partner-api-key: YOUR-KEY-HERE"
+```
 
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
+```php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://app-flycoin.onrender.com/api/v1/partner/account/<partner_identifier_key>');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+]);
+curl_setopt($ch, CURLOPT_COOKIE, 'fly-partner-api-key: YOUR-KEY-HERE');
+
+$response = curl_exec($ch);
+
+curl_close($ch);
 ```
 
 ```python
-import kittn
+import requests
 
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
+cookies = {
+    'fly-partner-api-key: YOUR-KEY-HERE': '',
+}
 
-```shell
-curl "http://example.com/api/kittens" \
-  -H "Authorization: meowmeowmeow"
+headers = {
+    # 'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE',
+}
+
+response = requests.get('https://app-flycoin.onrender.com/api/v1/partner/account/<partner_identifier_key>', headers=headers, cookies=cookies)
 ```
 
 ```javascript
-const kittn = require('kittn');
+fetch('https://app-flycoin.onrender.com/api/v1/partner/account/<partner_identifier_key>', {
+    headers: {
+        'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE'
+    }
+});
+```
 
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
+> The above command returns JSON structured like this:
+
+```json
+{
+  "balances": [
+    {
+      "account_id": 1,
+      "amount": 42,
+      "created_at": "2022-03-22 16:25:10.534898-07:00",
+      "currency_id": 1,
+      "deleted_at": null,
+      "id": 1,
+      "updated_at": "2022-03-22 16:25:10.534898-07:00"
+    }
+  ],
+  "created_at": "2022-03-22 16:25:10.534898-07:00",
+  "deleted_at": null,
+  "id": 1,
+  "is_partner": true,
+  "transaction_history": [
+    {
+      "id": 39,
+      "created_at": "2022-03-28T15:51:32.286385-07:00",
+      "updated_at": "2022-03-28T15:51:32.290481-07:00",
+      "deleted_at": null,
+      "account_id": 9,
+      "reference_account_id": 0,
+      "currency_id": 2,
+      "currency":{
+        "id": 2,
+        "currency_name": "FLY"
+      },
+      "amount": 42,
+      "usd_cent_exchange_rate": 0,
+      "kind": "Rewards",
+      "description": "signup reward",
+      "resulting_balance": 0,
+      "public_address": ""
+    }
+  ],
+  "updated_at": "2022-03-22 16:25:10.534898-07:00"
+}
+```
+
+This endpoint retrieves the account associated with ```<partner_identifier_key>```
+
+#### HTTP Request
+
+`GET https://app-flycoin.onrender.com/api/v1/partner/account/<partner_identifier_key>`
+
+#### Query Parameters
+
+Parameter | Description
+--------- | -----------
+partner_identifier_key | This is an identifier associated with a Flycoin account.
+
+### Assign Rewards to an Account
+
+```shell
+curl "https://app-flycoin.onrender.com/api/v1/partner/rewards/<partner_identifier_key>" \
+  -X POST \
+  -b "fly-partner-api-key: YOUR-KEY-HERE"
+  -d "{'amount': 100, 'currency': 'FLY', 'description': 'Rewards for user sign-up'}"
+```
+
+```php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://app-flycoin.onrender.com/api/v1/partner/rewards/<partner_identifier_key>');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+]);
+curl_setopt($ch, CURLOPT_COOKIE, 'fly-partner-api-key: YOUR-KEY-HERE');
+
+$response = curl_exec($ch);
+
+curl_close($ch);
+```
+
+```python
+import requests
+
+cookies = {
+    'fly-partner-api-key: YOUR-KEY-HERE': '',
+}
+
+headers = {
+    # 'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE',
+}
+
+response = requests.post('https://app-flycoin.onrender.com/api/v1/partner/rewards/<partner_identifier_key>', headers=headers, cookies=cookies)
+```
+
+```javascript
+fetch('https://app-flycoin.onrender.com/api/v1/partner/rewards/<partner_identifier_key>', {
+    method: 'POST',
+    headers: {
+        'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE'
+    }
+});
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+  "message": "success"
+}
+```
+
+This endpoint assigns a specific amount of currency to an account.
+
+#### HTTP Request
+
+`POST https://app-flycoin.onrender.com/api/v1/partner/rewards/<partner_identifier_key>`
+
+#### URL Parameters
+
+Parameter | Description
+--------- | -----------
+partner_identifier_key | This is an identifier associated with a Flycoin account.
+
+### Generating a Claim Link
+
+```shell
+curl "https://app-flycoin.onrender.com/api/v1/partner/claim/generate_link/<partner_identifier_key>" \
+  -X POST \
+  -b "fly-partner-api-key: YOUR-KEY-HERE"
+```
+
+```php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://app-flycoin.onrender.com/api/v1/partner/claim/generate_link/<partner_identifier_key>');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+]);
+curl_setopt($ch, CURLOPT_COOKIE, 'fly-partner-api-key: YOUR-KEY-HERE');
+
+$response = curl_exec($ch);
+
+curl_close($ch);
+```
+
+```python
+import requests
+
+cookies = {
+    'fly-partner-api-key: YOUR-KEY-HERE': '',
+}
+
+headers = {
+    # 'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE',
+}
+
+response = requests.post('https://app-flycoin.onrender.com/api/v1/partner/claim/generate_link/<partner_identifier_key>', headers=headers, cookies=cookies)
+```
+
+```javascript
+fetch('https://app-flycoin.onrender.com/api/v1/partner/claim/generate_link/<partner_identifier_key>', {
+    method: 'POST',
+    headers: {
+        'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE'
+    }
+});
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+  "message": "success",
+  "claim_link": "https://app-flycoin.onrender.com/login?claim_code=ClaimToken"
+}
+```
+
+<aside class="notice"> The claim code is 10 characters long and contains only [a-z,A-z,0-9]</aside>
+This endpoint creates a link to Flycoin that is used to link an external account with a Flycoin account. Once the link has been
+clicked, you will be redirected to the Flycoin website and either be asked to login/signup or if you're already signed in, that account
+will be linked.
+
+#### HTTP Request
+
+`POST https://app-flycoin.onrender.com/api/v1/partner/claim/generate_link/<partner_identifier_key>`
+
+#### URL Parameters
+
+Parameter | Description
+--------- | -----------
+partner_identifier_key | This is an identifier associated with a Flycoin account.
+
+### Get Top Balances
+
+```shell
+curl "https://app-flycoin.onrender.com/api/v1/partner/top/<currency_name>/<count>" \
+  -b "fly-partner-api-key: YOUR-KEY-HERE"
+```
+
+```php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://app-flycoin.onrender.com/api/v1/partner/top/<currency_name>/<count>');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+]);
+curl_setopt($ch, CURLOPT_COOKIE, 'fly-partner-api-key: YOUR-KEY-HERE');
+
+$response = curl_exec($ch);
+
+curl_close($ch);
+```
+
+```python
+import requests
+
+cookies = {
+    'fly-partner-api-key: YOUR-KEY-HERE': '',
+}
+
+headers = {
+    # 'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE',
+}
+
+response = requests.get('https://app-flycoin.onrender.com/api/v1/partner/top/<currency_name>/<count>', headers=headers, cookies=cookies)
+```
+
+```javascript
+fetch('https://app-flycoin.onrender.com/api/v1/partner/top/<currency_name>/<count>', {
+    headers: {
+        'Cookie': 'fly-partner-api-key: YOUR-KEY-HERE'
+    }
+});
 ```
 
 > The above command returns JSON structured like this:
@@ -106,140 +358,29 @@ let kittens = api.kittens.get();
 ```json
 [
   {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
+    "partner_identifier_key": "example_key_0",
+    "value": 90.39
   },
   {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
+    "partner_identifier_key": "example_key_1",
+    "value": 1000
+  },
+  {
+    "partner_identifier_key": "example_key_2",
+    "value": 0.01
+  },
 ]
 ```
 
-This endpoint retrieves all kittens.
+This endpoint retrieves a list of partner_identifier_keys of the highest ranking flycoin holders associated with the partner.
 
-### HTTP Request
+#### HTTP Request
 
-`GET http://example.com/api/kittens`
+`GET https://app-flycoin.onrender.com/api/v1/partner/top/<currency_name>/<count>`
 
-### Query Parameters
-
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
-
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
-
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2" \
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
-}
-```
-
-This endpoint retrieves a specific kitten.
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
-### HTTP Request
-
-`GET http://example.com/kittens/<ID>`
-
-### URL Parameters
+#### URL Parameters
 
 Parameter | Description
 --------- | -----------
-ID | The ID of the kitten to retrieve
-
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2" \
-  -X DELETE \
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "deleted" : ":("
-}
-```
-
-This endpoint deletes a specific kitten.
-
-### HTTP Request
-
-`DELETE http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to delete
-
+currency_name | The name of the currency to compare
+count | The number of the top accounts to retrieve
