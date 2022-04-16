@@ -40,4 +40,4 @@ jobs:
         REPO: self
         BRANCH: production
         FOLDER: ./build
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
